@@ -1,2 +1,4 @@
 yolo-bib-tag/data
 yolo-bib-text/data
+*.backup
+*.weights

@@ -21,18 +21,12 @@ working_dir = os.path.dirname(os.path.realpath(__file__))
 def update_plot(line, plot_element):
     matches = re.finditer(line_regex, line)
 
-    has_data = False
-
     for matchNum, match in enumerate(matches):
-        iteration = match.groups()[0]
-        avg = match.groups()[2]
+    	iteration = match.groups()[0]
+    	avg = match.groups()[2]
 
-        plot_element.set_xdata(numpy.append(plot_element.get_xdata(), float(iteration)))
+    	plot_element.set_xdata(numpy.append(plot_element.get_xdata(), float(iteration)))
         plot_element.set_ydata(numpy.append(plot_element.get_ydata(), float(avg)))
-
-        has_data = True
-
-    return has_data
 
 def run_command(command, cwd=working_dir):
     p = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False, cwd=cwd)
@@ -67,7 +61,9 @@ train_path = os.path.join(project_path, 'train.txt')
 backup_path = os.path.join(project_path, 'backup')
 
 # create command
-command = '%s detector train "%s" "%s" "%s"' % (yolo_bin, train_data_path, config_path, weights_path)
+# command = '%s detector train "%s" "%s" "%s"' % (yolo_bin, train_data_path, config_path, weights_path)
+
+command = "python yolotest.py"
 
 # print configuration
 print('YOLO Train')
@@ -77,7 +73,7 @@ print('running training for project "%s":\n\n%s\n' % (args.project, command))
 # ask if start
 answer = ''
 if not args.quiet:
-    answer = raw_input('Should we start? [y/n]\n').lower().strip()
+	answer = raw_input('Should we start? [y/n]\n').lower().strip()
 
 if answer != 'y' and answer != '':
     exit(0)
@@ -100,16 +96,14 @@ ax.set_ylabel('Average Mean (Error)')
 avg_line, = ax.plot([], [], 'b-')
 
 # start training
-for line in run_command(command, project_path):
+for line in run_command(command):
     # update plot
-    has_data = update_plot(line, avg_line)
-
-    if has_data:
-        ax.set_title('Average Mean (%.4f)' % avg_line.get_ydata()[-1])
-        ax.relim()
-        ax.autoscale_view()
-        fig.canvas.draw()
-        plt.pause(0.1)
+    update_plot(line, avg_line)
+    ax.set_title('Average Mean (%.4f)' % avg_line.get_ydata()[-1])
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    plt.pause(0.1)
 
     # show line
     sys.stdout.write(line)
