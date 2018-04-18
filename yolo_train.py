@@ -17,6 +17,12 @@ import numpy
 line_regex = r"(\d+):\s(\d+\.\d+),\s(\d+\.\d+)\savg,\s(\d+\.\d+)\srate,\s(\d+\.\d+)\sseconds,\s(\d+)\simages"
 working_dir = os.path.dirname(os.path.realpath(__file__))
 
+# plot vars
+max_plot_entries = 800
+division_index = 0
+iteration = 0
+mean_avg = 0.0
+
 # methods
 def update_plot(line, plot_element):
     matches = re.finditer(line_regex, line)
@@ -24,11 +30,19 @@ def update_plot(line, plot_element):
     has_data = False
 
     for matchNum, match in enumerate(matches):
-        iteration = match.groups()[0]
-        avg = match.groups()[2]
+        global division_index
+        global max_plot_entries
+        global iteration
+        global mean_avg
 
-        plot_element.set_xdata(numpy.append(plot_element.get_xdata(), float(iteration)))
-        plot_element.set_ydata(numpy.append(plot_element.get_ydata(), float(avg)))
+        iteration = float(match.groups()[0])
+        divison_avg = float(match.groups()[1])
+        mean_avg = float(match.groups()[2])
+
+        plot_element.set_xdata(numpy.append(plot_element.get_xdata(), float(division_index))[-max_plot_entries:])
+        plot_element.set_ydata(numpy.append(plot_element.get_ydata(), float(divison_avg))[-max_plot_entries:])
+
+        division_index += 1
 
         has_data = True
 
@@ -105,7 +119,7 @@ for line in run_command(command, project_path):
     has_data = update_plot(line, avg_line)
 
     if has_data:
-        ax.set_title('Average Mean (%.4f)' % avg_line.get_ydata()[-1])
+        ax.set_title('AVG (%s = %.4f)' % (iteration, mean_avg))
         ax.relim()
         ax.autoscale_view()
         fig.canvas.draw()

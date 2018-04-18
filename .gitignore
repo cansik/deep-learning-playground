@@ -2,3 +2,5 @@ yolo-bib-tag/data
 yolo-bib-text/data
 *.backup
 *.weights
+svhn/data
+svhn.backup copy

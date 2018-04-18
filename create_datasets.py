@@ -26,7 +26,7 @@ file_test = open(os.path.join(project_path, 'test.txt'), 'w')
 
 # Populate train.txt and test.txt
 counter = 1
-index_test = round(100 / percentage_test)  
+index_test = round(100 / int(args.test))  
 for pathAndFilename in glob.iglob(os.path.join(data_path, "*.txt")):  
     title, ext = os.path.splitext(os.path.basename(pathAndFilename))
 
