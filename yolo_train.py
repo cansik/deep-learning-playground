@@ -35,7 +35,7 @@ def update_plot(line, plot_element):
         global iteration
         global mean_avg
 
-        iteration = float(match.groups()[0])
+        iteration = int(match.groups()[0])
         divison_avg = float(match.groups()[1])
         mean_avg = float(match.groups()[2])
 
