@@ -4,3 +4,5 @@ yolo-bib-text/data
 *.weights
 svhn/data
 svhn.backup copy
+numer-detector/TagNumberGenerator/result
+yolo-bib-gen/data

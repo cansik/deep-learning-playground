@@ -13,5 +13,8 @@ public class TagFont
   public void init()
   {
     font = createFont(name, size);
+
+    if (font == null)
+      print("could not load font " + name);
   }
 }
