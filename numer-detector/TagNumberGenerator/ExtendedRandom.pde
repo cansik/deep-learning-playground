@@ -51,6 +51,6 @@ public class ExtendedRandom
 
   public int randomInt(int min, int max)
   {
-    return Math.round(randomFloat(min, max));
+    return Math.round(randomFloat(min - 0.49999, max + 0.49999));
   }
 }

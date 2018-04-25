@@ -11,8 +11,8 @@ int maxLength = 6;
 
 float tagWHRatio = 0.5f;
 
-float minFontSize = 8;
-float maxFontSize = 120;
+float minFontSize = 20;
+float maxFontSize = 80;
 
 float tagMargin = 1.1;
 
@@ -26,6 +26,15 @@ float lightLeakProbability = 0.8;
 Colors farben = new Colors();
 
 TagColor[] colors = new TagColor[] {
+  // white black (with a higher probaility)
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
   new TagColor(farben.White, farben.Black), 
   new TagColor(farben.Black, farben.White), 
 

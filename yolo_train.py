@@ -18,7 +18,7 @@ line_regex = r"(\d+):\s(\d+\.\d+),\s(\d+\.\d+)\savg,\s(\d+\.\d+)\srate,\s(\d+\.\
 working_dir = os.path.dirname(os.path.realpath(__file__))
 
 # plot vars
-max_plot_entries = 800
+max_plot_entries = 1200
 division_index = 0
 iteration = 0
 mean_avg = 0.0
