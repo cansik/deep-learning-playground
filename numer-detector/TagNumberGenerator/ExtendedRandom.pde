@@ -21,7 +21,7 @@ public class ExtendedRandom
 
   public boolean randomBoolean(float value)
   {
-    return randomFloat() >= value;
+    return randomFloat() <= value;
   }
 
   public float randomFloat ()

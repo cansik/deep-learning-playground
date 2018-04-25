@@ -12,9 +12,14 @@ int maxLength = 5;
 float tagWHRatio = 0.5f;
 
 float minFontSize = 14;
-float maxFontSize = 100;
+float maxFontSize = 120;
 
-float maxAffineTransform = 0.1f;
+float tagMargin = 1.5;
+
+float maxAffineTransform = 0.2f;
+
+float backgroundDustProbability = 0.9;
+float foregroundDustProbability = 0.9;
 
 TagColor[] colors = new TagColor[] {
   new TagColor(color(255.0), color(0.0)), 
@@ -27,6 +32,11 @@ TagFont[] fonts = new TagFont[] {
   new TagFont("Arial Black", 18), 
   new TagFont("Helvetica Neue Bold", 18)
 };
+
+PImage[] dustImages;
+
+int[] backgroundBlendModes = new int[] {SCREEN, MULTIPLY};
+int[] foregroundBlendModes = new int[] {ADD, LIGHTEST, EXCLUSION, SCREEN};
 
 // vars
 int iteration = 0;
@@ -43,6 +53,9 @@ void setup()
   {
     font.init();
   }
+
+  // setup dust
+  dustImages = loadImageSet("data/dust/", ".jpg");
 }
 
 void draw()
@@ -52,16 +65,6 @@ void draw()
   // create tag
   PImage tag = createTag();
   image(tag, width / 2 - (tag.width / 2), height / 2 - (tag.height / 2));
-
-  // create characters
-
-  // add characters to tag
-
-  // posprocess tag
-
-  // save
-
-  // display
 
   iteration++;
 
@@ -90,8 +93,6 @@ PImage createTag()
     counters[index]++;
   }
 
-  //println("Tag '" + number + "'");
-
   // create characters
   int tagWidth = 0;
   int tagHeight = 0;
@@ -107,32 +108,90 @@ PImage createTag()
   }
 
   // calculate tag size
-  PGraphics tag = createGraphics(Math.round(tagWidth), Math.round(tagHeight), P2D);
+  PGraphics tag = createGraphics(Math.round(tagWidth * tagMargin), Math.round(tagHeight * tagMargin), P2D);
 
   tag.beginDraw();
   tag.background(tagColor.background);
+
+  // add background noise
+  if (rnd.randomBoolean(backgroundDustProbability))
+  {
+    addDust(tag, backgroundBlendModes);
+  }
 
   PRectangle[] boundingBoxes = new PRectangle[number.length()];
 
   int w = 0;
   for (int i = 0; i < characters.length; i++)
   {
-    //tag.image(characters[i], w, 0);
-    PShape shape = randomAffineTransformImage(tag, characters[i], w, 0);
+    PShape shape = randomRotateSkewTransformImage(tag, characters[i], 
+      w + tag.width / 2 - (tagWidth / 2f), 
+      tag.height / 2 - (tagHeight / 2f));
     PRectangle rect = boundingBox(shape);
     boundingBoxes[i] = rect;
+    w += characters[i].width;
+  }
 
+  // add dust
+  if (rnd.randomBoolean(foregroundDustProbability))
+  {
+    addDust(tag, foregroundBlendModes);
+  }
+
+  // draw bounding boxes
+  for (int i = 0; i < boundingBoxes.length; i++)
+  {
     // draw rect
+    PRectangle rect = boundingBoxes[i];
     tag.noFill();
     tag.stroke(255, 0, 255);
     tag.rect(rect.position.x, rect.position.y, rect.width, rect.height);
-
-    w += characters[i].width;
   }
+
   tag.endDraw();
 
   return tag;
 }
+
+void addDust(PGraphics graphics, int[] blendModes)
+{
+  PImage dust = dustImages[rnd.randomInt(dustImages.length - 1)];
+  int blendMode = blendModes[rnd.randomInt(blendModes.length - 1)];
+
+  graphics.blendMode(blendMode);
+  graphics.image(dust, 0, 0, graphics.width, graphics.height, rnd.randomInt(0, dust.width), rnd.randomInt(0, dust.height), rnd.randomInt(0, dust.width), rnd.randomInt(0, dust.height));
+  //graphics.image(dust, rnd.randomInt(0, -dust.width / 2), rnd.randomInt(0, -dust.height / 2), rnd.randomInt(graphics.width, dust.width / 2), rnd.randomInt(graphics.height, dust.height / 2));
+  graphics.blendMode(BLEND);
+}
+
+PShape randomRotateSkewTransformImage(PGraphics g, PImage image, float x, float y)
+{
+  float dx1 = rnd.randomFloat(image.width * -maxAffineTransform, image.width * maxAffineTransform);
+  float dy1 = rnd.randomFloat(image.height * -maxAffineTransform, image.height * maxAffineTransform);
+
+  float dx2 = rnd.randomFloat(image.width * -maxAffineTransform, image.width * maxAffineTransform);
+  float dy2 = rnd.randomFloat(image.height * -maxAffineTransform, image.height * maxAffineTransform);
+
+  float sx1 = rnd.randomBoolean() ? 1 : -1;
+  float sy1 = rnd.randomBoolean() ? 1 : -1;
+  float sx2 = rnd.randomBoolean() ? 1 : -1;
+  float sy2 = rnd.randomBoolean() ? 1 : -1;
+
+  return affineTransformImage(g, image, x, y, dx1 * sx1, dy1 * sy1, dx1 * sx2, dy2 * sy1, dx2 * sx1, dy2 * sy1, dx2 * sx1, dy1 * sy2);
+}
+
+
+PShape randomSkewTransformImage(PGraphics g, PImage image, float x, float y)
+{
+  float dx1 = rnd.randomFloat(image.width * -maxAffineTransform, image.width * maxAffineTransform);
+  float dy1 = rnd.randomFloat(image.height * -maxAffineTransform, image.height * maxAffineTransform);
+
+  float dx2 = rnd.randomFloat(image.width * -maxAffineTransform, image.width * maxAffineTransform);
+  float dy2 = rnd.randomFloat(image.height * -maxAffineTransform, image.height * maxAffineTransform);
+
+  return affineTransformImage(g, image, x, y, dx1, dy1, dx1, dy2, dx2, dy2, dx2, dy1);
+}
+
 
 PShape randomAffineTransformImage(PGraphics g, PImage image, float x, float y)
 {
@@ -220,6 +279,42 @@ void printCounters()
     print(chars[i] + ": " + counters[i] + "\t");
   }
   println();
+}
+
+String[] listFileNames(String dir, String extension) {
+  File file = new File(dir);
+  if (file.isDirectory()) {
+    String names[] = file.list();
+    ArrayList<String> specific = new ArrayList<String>();
+
+    for (int i = 0; i < names.length; i++)
+      if (names[i].endsWith(".jpg"))
+        specific.add(names[i]);
+
+    String[] result = new String[specific.size()];
+    for (int i = 0; i < result.length; i++)
+    {
+      result[i] = specific.get(i);
+    }
+
+    return result;
+  } else {
+    // If it's not a directory
+    return null;
+  }
+}
+
+PImage[] loadImageSet(String setPath, String extension)
+{
+  String imagePath = sketchPath(setPath);
+  String[] files = listFileNames(imagePath, extension);
+  PImage[] images = new PImage[files.length];
+  for (int i = 0; i < files.length; i++)
+  {
+    images[i] = loadImage(imagePath + files[i]);
+  }
+
+  return images;
 }
 
 /*
