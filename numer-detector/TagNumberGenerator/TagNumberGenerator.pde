@@ -2,19 +2,21 @@
 boolean debug = false;
 long seed = 1234567890;
 int count = 20;
-int imagePerCharacter = 5000;
+int imagePerCharacter = 10000;
 String[] chars = "V1234567890".split("");
 int[] counters = new int[chars.length];
 
-int minLength = 1;
-int maxLength = 6;
+int minLength = 8;
+int maxLength = 8;
 
 float tagWHRatio = 0.5f;
 
-float minFontSize = 20;
+float minFontSize = 14;
 float maxFontSize = 80;
 
-float tagMargin = 1.1;
+float tagMargin = 1.05;
+
+float charDistance = 0.05;
 
 float maxAffineTransform = 0.1f;
 
@@ -23,10 +25,25 @@ float foregroundDustProbability = 0.9;
 
 float lightLeakProbability = 0.8;
 
+float resizeProbability = 0.3;
+float minResize = 0.5;
+float maxResize = 1.5;
+
 Colors farben = new Colors();
 
 TagColor[] colors = new TagColor[] {
   // white black (with a higher probaility)
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+  new TagColor(farben.White, farben.Black), 
+  new TagColor(farben.Black, farben.White), 
+
   new TagColor(farben.White, farben.Black), 
   new TagColor(farben.Black, farben.White), 
   new TagColor(farben.White, farben.Black), 
@@ -88,14 +105,13 @@ TagColor[] colors = new TagColor[] {
   new TagColor(farben.White, farben.Gray), 
 };
 
+int fontSize = 18;
 TagFont[] fonts = new TagFont[] { 
-  new TagFont("Impact", 18), 
-  new TagFont("Arial Black", 18), 
-  new TagFont("Helvetica Neue Bold", 18), 
-  new TagFont("Avenir Next Bold", 18), 
-  new TagFont("Comic Sans MS Bold", 18), 
-  new TagFont("Phosphate Solid", 18), 
-  new TagFont("Verdana", 18)
+  new TagFont("Impact", fontSize), 
+  new TagFont("Arial Black", fontSize), 
+  new TagFont("DINAlternate-Bold", fontSize), 
+  new TagFont("Verdana-Bold", fontSize), 
+  new TagFont("SquadaOne-Regular", fontSize), 
 };
 
 PImage[] dustImages;
@@ -140,13 +156,27 @@ void draw()
 {
   background(55);
 
+  if (iteration == 0 && debug)
+  {
+    float x = 100;
+    float y = 50;
+    float dy = 25;
+
+    for (int i = 0; i <fonts.length; i++)
+    {
+      TagFont font = fonts[i];
+      textFont(font.font);
+      text("12345 (" + font.name + ")", x, y + (dy * i));
+    }
+
+    noLoop();
+  }
+
   // create tag
   PImage tag = createTag();
-  image(tag, width / 2 - (tag.width / 2), height / 2 - (tag.height / 2));
 
   // save image
   String fileName = "result/" + iteration + "_gen";
-  tag.save(fileName + ".jpg");
 
   // save box
   String[] annotations = new String[currentBoxes.length];
@@ -157,6 +187,11 @@ void draw()
     annotations[i] = charIndex.get(c) + " " + currentBoxes[i].relativeText(tag.width, tag.height);
   }
   saveStrings(fileName + ".txt", annotations);
+
+  // show tag
+  randomResize(tag);
+  image(tag, width / 2 - (tag.width / 2), height / 2 - (tag.height / 2));
+  tag.save(fileName + ".jpg");
 
   iteration++;
 
@@ -182,6 +217,24 @@ void draw()
       exit();
     }
   }
+
+  noFill();
+  stroke(0, 255, 0);
+  textSize(12);
+  textFont(fonts[2].font);
+  text("FPS: " + frameRate, 25, 25);
+  text("ITR: " + iteration, 25, 40);
+}
+
+void randomResize(PImage image)
+{
+  if (rnd.randomBoolean(resizeProbability))
+  {
+    float scale = rnd.randomFloat(minResize, maxResize);
+    float w = image.width * scale;
+    float h = image.height * scale;
+    image.resize(Math.round(w), Math.round(h));
+  }
 }
 
 PImage createTag()
@@ -190,7 +243,6 @@ PImage createTag()
   TagColor tagColor = colors[rnd.randomInt(colors.length - 1)];
 
   float fontSize = rnd.randomFloat(minFontSize, maxFontSize);
-
   int textLength = rnd.randomInt(minLength, maxLength);
 
   // read characters
@@ -399,10 +451,13 @@ PImage generateCharacter(String character, TagFont font, color foreground, int f
 void printCounters()
 {
   print("Counters: ");
+  int total = 0;
   for (int i = 0; i < counters.length; i++)
   {
     print(chars[i] + ": " + counters[i] + "\t");
+    total += counters[i];
   }
+  println("Total: " + total + " chars in " + iteration + " images!");
   println();
 }
 
@@ -440,6 +495,11 @@ PImage[] loadImageSet(String setPath, String extension)
   }
 
   return images;
+}
+
+void keyPressed()
+{
+  loop();
 }
 
 /*
