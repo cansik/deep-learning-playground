@@ -1,22 +1,22 @@
 // settings
 boolean debug = false;
-long seed = 1234567890;
+long seed = 42352;
 int count = 20;
-int imagePerCharacter = 10000;
+int imagePerCharacter = 2000;
 String[] chars = "V1234567890".split("");
 int[] counters = new int[chars.length];
 
-int minLength = 8;
-int maxLength = 8;
+int minLength = 1;
+int maxLength = 5;
 
 float tagWHRatio = 0.5f;
 
-float minFontSize = 14;
-float maxFontSize = 80;
+float minFontSize = 12;
+float maxFontSize = 30;
 
-float tagMargin = 1.05;
+float tagMargin = 2.0;
 
-float charDistance = 0.05;
+float charDistance = 0.12;
 
 float maxAffineTransform = 0.1f;
 
@@ -107,6 +107,9 @@ TagColor[] colors = new TagColor[] {
 
 int fontSize = 18;
 TagFont[] fonts = new TagFont[] { 
+  new TagFont("test", fontSize), 
+  new TagFont("test", fontSize), 
+  new TagFont("test", fontSize), 
   new TagFont("Impact", fontSize), 
   new TagFont("Arial Black", fontSize), 
   new TagFont("DINAlternate-Bold", fontSize), 
@@ -221,8 +224,8 @@ void draw()
   noFill();
   stroke(0, 255, 0);
   textSize(12);
-  textFont(fonts[2].font);
-  text("FPS: " + frameRate, 25, 25);
+  textFont(fonts[0].font);
+  text("FPS: " + frameRate, 25, 20);
   text("ITR: " + iteration, 25, 40);
 }
 
@@ -244,6 +247,8 @@ PImage createTag()
 
   float fontSize = rnd.randomFloat(minFontSize, maxFontSize);
   int textLength = rnd.randomInt(minLength, maxLength);
+
+  float space = charDistance * fontSize;
 
   // read characters
   String number = "";
@@ -270,6 +275,8 @@ PImage createTag()
     tagHeight = max(tagHeight, characters[i].height);
   }
 
+  tagWidth += (space * characters.length - 1);
+
   // calculate tag size
   PGraphics tag = createGraphics(Math.round(tagWidth * tagMargin), Math.round(tagHeight * tagMargin), P2D);
 
@@ -285,14 +292,14 @@ PImage createTag()
   int w = 0;
   for (int i = 0; i < characters.length; i++)
   {
-    PShape shape = randomRotateSkewTransformImage(tag, characters[i], 
+    PShape shape = randomAffineTransformImage(tag, characters[i], 
       w + tag.width / 2 - (tagWidth / 2f), 
       tag.height / 2 - (tagHeight / 2f));
     PRectangle rect = boundingBox(shape, tag.width, tag.height);
 
     // limit to on picture values
     boundingBoxes[i] = rect;
-    w += characters[i].width;
+    w += characters[i].width + space;
   }
 
   // add dust
@@ -320,6 +327,8 @@ PImage createTag()
 
   currentBoxes = boundingBoxes;
 
+  // grayscale
+  tag.filter(GRAY);
   return tag;
 }
 

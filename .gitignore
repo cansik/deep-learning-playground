@@ -8,3 +8,5 @@ numer-detector/TagNumberGenerator/result
 yolo-bib-gen/data
 yolo-bib-gen/data_old
 yolo-bib-gen/data_2
+numer-detector/TagNumberChecker/data
+yolo-bib-gen/data_large
