@@ -1,6 +1,6 @@
 // settings
 boolean debug = false;
-long seed = 42352;
+long seed = 312534; //42352;
 int count = 20;
 int imagePerCharacter = 2000;
 String[] chars = "V1234567890".split("");
@@ -16,7 +16,7 @@ float maxFontSize = 30;
 
 float tagMargin = 2.0;
 
-float charDistance = 0.12;
+float charDistance = 0.05;
 
 float maxAffineTransform = 0.1f;
 
@@ -165,7 +165,7 @@ void draw()
     float y = 50;
     float dy = 25;
 
-    for (int i = 0; i <fonts.length; i++)
+    for (int i = 0; i < fonts.length; i++)
     {
       TagFont font = fonts[i];
       textFont(font.font);
@@ -219,6 +219,11 @@ void draw()
       printCounters();
       exit();
     }
+  }
+
+  if (frameCount % 1000 == 0)
+  {
+    printCounters();
   }
 
   noFill();
