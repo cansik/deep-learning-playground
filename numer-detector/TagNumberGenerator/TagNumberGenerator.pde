@@ -2,7 +2,7 @@
 boolean debug = false;
 long seed = 312534; //42352;
 int count = 20;
-int imagePerCharacter = 2000;
+int imagePerCharacter = 300;
 String[] chars = "V1234567890".split("");
 int[] counters = new int[chars.length];
 
